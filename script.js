@@ -96,6 +96,13 @@ const state = {
   frets: 15,
   showDegrees: false,
   leftHanded: false,
+  // "Box" de posição: janela do braço com largura/posição configuráveis.
+  region: {
+    enabled: false,
+    start: 5,        // casa inicial da janela
+    span: 4,         // quantidade de casas da janela
+    hideOutside: false, // esconder (true) ou apenas esmaecer (false) o que está fora
+  },
 };
 
 // ------------------------------------------------------------
@@ -199,6 +206,12 @@ function renderFretboard() {
   board.style.setProperty('--num-frets', numFrets);
   board.classList.toggle('left-handed', state.leftHanded);
 
+  // Limites da região (box de posição).
+  const region = state.region;
+  const regStart = region.start;
+  const regEnd = region.start + region.span - 1;
+  const inRegion = (f) => f >= regStart && f <= regEnd;
+
   // ----- Linha de números das casas (topo) -----
   const fretNumbersRow = document.createElement('div');
   fretNumbersRow.className = 'fret-numbers';
@@ -212,6 +225,7 @@ function renderFretboard() {
     if (MARKER_FRETS.includes(f) || DOUBLE_MARKER_FRETS.includes(f)) {
       fn.classList.add('marker-fret');
     }
+    if (region.enabled && inRegion(f)) fn.classList.add('region-num');
     fn.textContent = f;
     fretNumbersRow.appendChild(fn);
   }
@@ -235,10 +249,21 @@ function renderFretboard() {
         else if (MARKER_FRETS.includes(f)) cell.classList.add('inlay');
       }
 
+      // Destaque visual da região (faixa vertical com bordas).
+      const cellInRegion = region.enabled && inRegion(f);
+      if (cellInRegion) {
+        cell.classList.add('region-cell');
+        if (f === regStart) cell.classList.add('region-start');
+        if (f === regEnd) cell.classList.add('region-end');
+      }
+
       const hits = hitTable[chromatic];
-      if (hits.length > 0) {
+      // Fora da região com "Ocultar fora" ativo: não desenha a nota.
+      const skipNote = region.enabled && !cellInRegion && region.hideOutside;
+      if (hits.length > 0 && !skipNote) {
         const noteEl = document.createElement('button');
         noteEl.className = 'note';
+        if (region.enabled && !cellInRegion) noteEl.classList.add('dimmed');
 
         const isTonic = hits.some(h => h.isTonic);
         if (isTonic) noteEl.classList.add('tonic');
@@ -417,6 +442,30 @@ function populateGlobalSelectors() {
   tuningSel.value = state.tuning;
 }
 
+// Sincroniza os controles da região com o estado (limites, rótulo, habilitado).
+function updateRegionUI() {
+  const region = state.region;
+  const startSlider = document.getElementById('regionStart');
+  const maxStart = Math.max(0, state.frets - region.span + 1);
+
+  startSlider.max = maxStart;
+  if (region.start > maxStart) region.start = maxStart;
+  startSlider.value = region.start;
+
+  const end = region.start + region.span - 1;
+  document.getElementById('regionLabel').textContent = region.enabled
+    ? `(casas ${region.start}–${end})`
+    : '';
+
+  // Habilita/desabilita os controles dependentes do toggle.
+  document.querySelectorAll('.region-only').forEach(el => {
+    el.classList.toggle('disabled', !region.enabled);
+  });
+  startSlider.disabled = !region.enabled;
+  document.getElementById('regionSpan').disabled = !region.enabled;
+  document.getElementById('regionHide').disabled = !region.enabled;
+}
+
 function bindEvents() {
   document.getElementById('addLayer').addEventListener('click', () => {
     if (state.layers.length >= MAX_LAYERS) return;
@@ -432,6 +481,7 @@ function bindEvents() {
   });
   document.getElementById('frets').addEventListener('change', e => {
     state.frets = parseInt(e.target.value, 10);
+    updateRegionUI(); // re-limita a posição da região ao novo nº de casas
     renderFretboard();
   });
   document.getElementById('showDegrees').addEventListener('change', e => {
@@ -440,6 +490,27 @@ function bindEvents() {
   });
   document.getElementById('leftHanded').addEventListener('change', e => {
     state.leftHanded = e.target.checked;
+    renderFretboard();
+  });
+
+  // ----- Região do braço -----
+  document.getElementById('regionEnabled').addEventListener('change', e => {
+    state.region.enabled = e.target.checked;
+    updateRegionUI();
+    renderFretboard();
+  });
+  document.getElementById('regionStart').addEventListener('input', e => {
+    state.region.start = parseInt(e.target.value, 10);
+    updateRegionUI();
+    renderFretboard();
+  });
+  document.getElementById('regionSpan').addEventListener('change', e => {
+    state.region.span = parseInt(e.target.value, 10);
+    updateRegionUI();
+    renderFretboard();
+  });
+  document.getElementById('regionHide').addEventListener('change', e => {
+    state.region.hideOutside = e.target.checked;
     renderFretboard();
   });
 }
@@ -455,4 +526,5 @@ function update() {
 populateGlobalSelectors();
 renderLayers();
 bindEvents();
+updateRegionUI();
 update();

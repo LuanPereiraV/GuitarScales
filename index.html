@@ -41,6 +41,32 @@
             </select>
           </div>
         </div>
+
+        <div class="region-controls">
+          <div class="control switch">
+            <input type="checkbox" id="regionEnabled" />
+            <label for="regionEnabled">Região do braço</label>
+          </div>
+          <div class="control region-only">
+            <label for="regionStart">Posição <span id="regionLabel" class="region-label"></span></label>
+            <input type="range" id="regionStart" min="0" max="15" value="5" step="1" />
+          </div>
+          <div class="control region-only">
+            <label for="regionSpan">Largura (casas)</label>
+            <select id="regionSpan">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4" selected>4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
+          </div>
+          <div class="control switch region-only">
+            <input type="checkbox" id="regionHide" />
+            <label for="regionHide">Ocultar fora</label>
+          </div>
+        </div>
       </section>
 
       <section class="fretboard-wrapper">

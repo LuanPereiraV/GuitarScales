@@ -233,6 +233,32 @@ main {
   border-radius: 10px;
 }
 
+/* ---------- Região do braço (box de posição) ---------- */
+.region-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--panel);
+  border-radius: 10px;
+}
+.region-label {
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.region-only.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.region-controls input[type="range"] {
+  accent-color: var(--accent);
+  width: 160px;
+  cursor: pointer;
+}
+
 /* ---------- Info da escala (notas), abaixo do braço ---------- */
 /* Cada escala é uma linha com a largura do braço: nome à esquerda, notas à direita. */
 .scale-info {
@@ -414,6 +440,32 @@ main {
 .note.tonic {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent), 0 2px 5px rgba(0,0,0,0.5);
+}
+/* Nota fora da região ativa: esmaecida (mas ainda clicável) */
+.note.dimmed {
+  opacity: 0.16;
+  filter: grayscale(0.5);
+}
+.note.dimmed:hover {
+  opacity: 0.6;
+}
+
+/* ---------- Destaque da região no braço ---------- */
+.fret-cell.region-cell {
+  background: rgba(217, 164, 65, 0.12);
+}
+.open-cell.region-cell {
+  background: rgba(217, 164, 65, 0.12);
+}
+.fret-cell.region-start {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.fret-cell.region-end {
+  border-right-color: var(--accent);
+}
+.fret-num.region-num {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* Canhoto: inverte horizontalmente */
