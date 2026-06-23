@@ -292,7 +292,7 @@ function renderScaleInfo() {
 
     return `
       <div class="info-scale" style="--layer-color: ${LAYER_COLORS[li]}">
-        <h3><span class="info-swatch"></span>${layer.key} ${scale.name}</h3>
+        <span class="info-scale-label"><span class="info-swatch"></span>${layer.key} ${scale.name}:</span>
         <div class="info-notes">${noteList}</div>
       </div>`;
   }).join('');

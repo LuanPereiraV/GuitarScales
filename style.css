@@ -233,29 +233,32 @@ main {
   border-radius: 10px;
 }
 
-/* ---------- Info da escala (notas), acima do braço ---------- */
+/* ---------- Info da escala (notas), abaixo do braço ---------- */
+/* Cada escala é uma linha com a largura do braço: nome à esquerda, notas à direita. */
 .scale-info {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  justify-content: flex-start;
-  flex: 1;
-  min-width: 220px;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 .info-scale {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
   background: var(--panel);
-  border-radius: 12px;
+  border-radius: 10px;
   border-left: 5px solid var(--layer-color);
-  padding: 0.8rem 1rem;
-  min-width: 200px;
+  padding: 0.5rem 0.9rem;
 }
-.info-scale h3 {
-  margin: 0 0 0.6rem;
-  font-size: 1.15rem;
-  color: var(--text);
+.info-scale-label {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  flex: none;
 }
 .info-swatch {
   width: 14px;
@@ -267,8 +270,9 @@ main {
 .info-notes {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: flex-start;
+  gap: 0.4rem;
+  align-items: center;
+  flex: 1;
 }
 .info-note {
   background: var(--wood);
