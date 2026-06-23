@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escalas na Guitarra</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🎸 Escalas na Guitarra</h1>
+    <p class="subtitle">Visualize as notas de qualquer escala no braço da guitarra</p>
+  </header>
+
+  <main>
+    <section class="controls" aria-label="Controles">
+      <div class="control">
+        <label for="key">Tom (tônica)</label>
+        <select id="key"></select>
+      </div>
+
+      <div class="control">
+        <label for="scale">Escala</label>
+        <select id="scale"></select>
+      </div>
+
+      <div class="control">
+        <label for="tuning">Afinação</label>
+        <select id="tuning"></select>
+      </div>
+
+      <div class="control">
+        <label for="frets">Casas</label>
+        <select id="frets">
+          <option value="12">12</option>
+          <option value="15" selected>15</option>
+          <option value="18">18</option>
+          <option value="22">22</option>
+          <option value="24">24</option>
+        </select>
+      </div>
+
+      <div class="control switch">
+        <label for="showDegrees">Mostrar graus</label>
+        <input type="checkbox" id="showDegrees" />
+      </div>
+
+      <div class="control switch">
+        <label for="leftHanded">Canhoto</label>
+        <input type="checkbox" id="leftHanded" />
+      </div>
+    </section>
+
+    <section class="scale-info" id="scaleInfo" aria-live="polite"></section>
+
+    <section class="fretboard-wrapper">
+      <div class="fretboard" id="fretboard"></div>
+    </section>
+
+    <section class="legend">
+      <span class="legend-item"><span class="dot tonic"></span> Tônica</span>
+      <span class="legend-item"><span class="dot note"></span> Nota da escala</span>
+      <span class="legend-item">Os números nas casas são as casas de referência (3, 5, 7, 9, 12...)</span>
+    </section>
+  </main>
+
+  <footer>
+    <p>Feito para praticar escalas • clique nas notas para ouvir (se o áudio estiver disponível)</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

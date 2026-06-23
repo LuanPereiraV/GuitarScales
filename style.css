@@ -1,0 +1,304 @@
+:root {
+  --bg: #1a1410;
+  --panel: #251c16;
+  --wood: #3a2a1c;
+  --wood-light: #4a3526;
+  --fret-line: #6b5640;
+  --string: #c9b48a;
+  --text: #f3ece0;
+  --muted: #b8a98f;
+  --note-bg: #2e7d6b;
+  --note-bg-hover: #3a9e88;
+  --tonic-bg: #e0533b;
+  --tonic-bg-hover: #f26b53;
+  --accent: #d9a441;
+  --inlay: rgba(255, 255, 255, 0.18);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.topbar {
+  text-align: center;
+  padding: 1.4rem 1rem 0.6rem;
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 0.5px;
+}
+.subtitle {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* ---------- Controles ---------- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: var(--panel);
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  align-items: end;
+  justify-content: center;
+}
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.control label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.control select {
+  background: var(--wood);
+  color: var(--text);
+  border: 1px solid var(--fret-line);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-width: 130px;
+}
+.control select:focus {
+  outline: 2px solid var(--accent);
+}
+.control.switch {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+}
+.control.switch label {
+  text-transform: none;
+  font-size: 0.9rem;
+  color: var(--text);
+  letter-spacing: 0;
+}
+.control.switch input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ---------- Info da escala ---------- */
+.scale-info {
+  text-align: center;
+  margin: 1.4rem 0 1rem;
+}
+.scale-info h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+.info-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.info-note {
+  background: var(--wood);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+.info-note small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+.info-tonic {
+  background: var(--tonic-bg);
+  color: #fff;
+}
+.info-tonic small { color: rgba(255,255,255,0.85); }
+
+/* ---------- Braço ---------- */
+.fretboard-wrapper {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  border-radius: 12px;
+}
+.fretboard {
+  --num-frets: 15;
+  --cell-w: 60px;
+  --open-w: 52px;
+  min-width: min-content;
+  background: linear-gradient(180deg, var(--wood-light), var(--wood));
+  border-radius: 10px;
+  padding: 0.4rem 0.6rem 0.8rem;
+  border: 2px solid var(--fret-line);
+}
+
+.fret-numbers,
+.string-row {
+  display: grid;
+  grid-template-columns: var(--open-w) repeat(var(--num-frets), var(--cell-w));
+}
+
+.fret-numbers {
+  margin-bottom: 0.3rem;
+}
+.fret-num {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding-bottom: 0.2rem;
+}
+.fret-num.marker-fret {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.string-row {
+  position: relative;
+  height: 46px;
+  align-items: center;
+}
+
+.fret-cell {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px solid var(--fret-line);
+}
+/* Linha da corda (horizontal) */
+.string-row::before {
+  content: '';
+  position: absolute;
+  left: var(--open-w);
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--string), #8c7a55);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* Casa 0 = pestana */
+.open-cell {
+  border-right: 5px solid var(--string);
+  background: rgba(0,0,0,0.15);
+}
+
+/* Marcadores (inlays) no braço */
+.inlay::after,
+.inlay-double::before,
+.inlay-double::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--inlay);
+  z-index: 0;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.inlay-double::before { transform: translateX(-130%); }
+.inlay-double::after  { transform: translateX(30%); }
+
+/* Notas */
+.note {
+  position: relative;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.3);
+  background: var(--note-bg);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  transition: transform 0.08s ease, background 0.15s ease;
+  font-family: inherit;
+}
+.note:hover {
+  background: var(--note-bg-hover);
+  transform: scale(1.12);
+}
+.note.tonic {
+  background: var(--tonic-bg);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: 0 0 0 2px rgba(224,83,59,0.4), 0 2px 4px rgba(0,0,0,0.4);
+}
+.note.tonic:hover {
+  background: var(--tonic-bg-hover);
+}
+
+/* Canhoto: inverte horizontalmente */
+.fretboard.left-handed .fret-numbers,
+.fretboard.left-handed .string-row {
+  direction: rtl;
+}
+.fretboard.left-handed .note,
+.fretboard.left-handed .fret-num {
+  direction: ltr;
+}
+
+/* ---------- Legenda ---------- */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: center;
+  margin-top: 1.2rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot.tonic { background: var(--tonic-bg); }
+.dot.note  { background: var(--note-bg); }
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding: 1.5rem 1rem 2rem;
+}
+
+@media (max-width: 600px) {
+  .fretboard { --cell-w: 46px; --open-w: 42px; }
+  .note { width: 30px; height: 30px; font-size: 0.72rem; }
+  .topbar h1 { font-size: 1.4rem; }
+}
