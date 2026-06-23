@@ -357,18 +357,18 @@ function renderLayers() {
     block.className = 'layer';
     block.style.setProperty('--layer-color', LAYER_COLORS[li]);
 
+    // Cabeçalho do card: cor + nome + remover
+    const head = document.createElement('div');
+    head.className = 'layer-head';
+
     const swatch = document.createElement('span');
     swatch.className = 'layer-color';
-    block.appendChild(swatch);
+    head.appendChild(swatch);
 
-    block.appendChild(makeControl('Tom', buildKeySelect(layer.key, v => {
-      layer.key = v;
-      update();
-    })));
-    block.appendChild(makeControl('Escala', buildScaleSelect(layer.scale, v => {
-      layer.scale = v;
-      update();
-    })));
+    const name = document.createElement('span');
+    name.className = 'layer-name';
+    name.textContent = `Escala ${li + 1}`;
+    head.appendChild(name);
 
     if (state.layers.length > 1) {
       const rm = document.createElement('button');
@@ -380,8 +380,18 @@ function renderLayers() {
         renderLayers();
         update();
       });
-      block.appendChild(rm);
+      head.appendChild(rm);
     }
+    block.appendChild(head);
+
+    block.appendChild(makeControl('Tom', buildKeySelect(layer.key, v => {
+      layer.key = v;
+      update();
+    })));
+    block.appendChild(makeControl('Escala', buildScaleSelect(layer.scale, v => {
+      layer.scale = v;
+      update();
+    })));
 
     container.appendChild(block);
   });

@@ -12,50 +12,59 @@
     <p class="subtitle">Visualize as notas de qualquer escala no braço da guitarra</p>
   </header>
 
-  <main>
-    <section class="controls" aria-label="Controles">
-      <!-- Escalas sobrepostas (geradas dinamicamente) -->
+  <main class="app-layout">
+    <!-- Barra lateral: escalas sobrepostas, empilhadas verticalmente -->
+    <aside class="sidebar" aria-label="Escalas">
+      <h2 class="sidebar-title">Escalas</h2>
       <div id="scaleLayers" class="scale-layers"></div>
-      <button id="addLayer" class="add-layer" title="Adicionar outra escala (sobreposição)" aria-label="Adicionar escala">+</button>
+      <button id="addLayer" class="add-layer" title="Adicionar outra escala (sobreposição)">
+        <span class="add-icon">+</span> Adicionar escala
+      </button>
+    </aside>
 
-      <div class="control">
-        <label for="tuning">Afinação</label>
-        <select id="tuning"></select>
-      </div>
+    <!-- Conteúdo principal -->
+    <div class="content">
+      <section class="board-top" aria-label="Configuração do braço">
+        <div class="board-top-controls">
+          <div class="control">
+            <label for="tuning">Afinação</label>
+            <select id="tuning"></select>
+          </div>
+          <div class="control">
+            <label for="frets">Casas</label>
+            <select id="frets">
+              <option value="12">12</option>
+              <option value="15" selected>15</option>
+              <option value="18">18</option>
+              <option value="22">22</option>
+              <option value="24">24</option>
+            </select>
+          </div>
+        </div>
+        <section class="scale-info" id="scaleInfo" aria-live="polite"></section>
+      </section>
 
-      <div class="control">
-        <label for="frets">Casas</label>
-        <select id="frets">
-          <option value="12">12</option>
-          <option value="15" selected>15</option>
-          <option value="18">18</option>
-          <option value="22">22</option>
-          <option value="24">24</option>
-        </select>
-      </div>
+      <section class="fretboard-wrapper">
+        <div class="fretboard" id="fretboard"></div>
+      </section>
 
-      <div class="control switch">
-        <label for="showDegrees">Mostrar graus</label>
-        <input type="checkbox" id="showDegrees" />
-      </div>
+      <section class="bottom-controls">
+        <div class="control switch">
+          <input type="checkbox" id="showDegrees" />
+          <label for="showDegrees">Mostrar graus</label>
+        </div>
+        <div class="control switch">
+          <input type="checkbox" id="leftHanded" />
+          <label for="leftHanded">Canhoto</label>
+        </div>
+      </section>
 
-      <div class="control switch">
-        <label for="leftHanded">Canhoto</label>
-        <input type="checkbox" id="leftHanded" />
-      </div>
-    </section>
-
-    <section class="scale-info" id="scaleInfo" aria-live="polite"></section>
-
-    <section class="fretboard-wrapper">
-      <div class="fretboard" id="fretboard"></div>
-    </section>
-
-    <section class="legend">
-      <span class="legend-item"><span class="dot tonic-ring"></span> Tônica (anel dourado)</span>
-      <span class="legend-item"><span class="dot split"></span> Nota comum a 2+ escalas (dividida nas cores)</span>
-      <span class="legend-item">Cada escala tem sua cor — veja os nomes acima do braço.</span>
-    </section>
+      <section class="legend">
+        <span class="legend-item"><span class="dot tonic-ring"></span> Tônica (anel dourado)</span>
+        <span class="legend-item"><span class="dot split"></span> Nota comum a 2+ escalas (dividida nas cores)</span>
+        <span class="legend-item">Cada escala tem sua cor — veja os nomes acima do braço.</span>
+      </section>
+    </div>
   </main>
 
   <footer>

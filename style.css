@@ -41,22 +41,44 @@ body {
 }
 
 main {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 1rem;
 }
 
-/* ---------- Controles ---------- */
-.controls {
+/* ---------- Layout em duas colunas ---------- */
+.app-layout {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  background: var(--panel);
-  padding: 1rem 1.2rem;
-  border-radius: 12px;
-  align-items: end;
-  justify-content: center;
+  align-items: flex-start;
+  gap: 1.2rem;
 }
+.content {
+  flex: 1;
+  min-width: 0; /* permite o braço encolher/rolar dentro do flex */
+}
+
+/* ---------- Barra lateral de escalas ---------- */
+.sidebar {
+  flex: none;
+  width: 240px;
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 1rem;
+  position: sticky;
+  top: 1rem;
+  align-self: flex-start;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+.sidebar-title {
+  margin: 0 0 0.8rem;
+  font-size: 1.1rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ---------- Controles ---------- */
 .control {
   display: flex;
   flex-direction: column;
@@ -99,43 +121,57 @@ main {
   cursor: pointer;
 }
 
-/* ---------- Camadas de escalas (sobreposição) ---------- */
+/* ---------- Camadas de escalas (sobreposição), na sidebar ---------- */
 .scale-layers {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.7rem;
-  align-items: stretch;
 }
 .layer {
   display: flex;
-  align-items: end;
-  gap: 0.6rem;
-  padding: 0.55rem 0.7rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.7rem;
   background: rgba(0, 0, 0, 0.18);
   border: 1px solid var(--fret-line);
   border-left: 4px solid var(--layer-color);
   border-radius: 10px;
+}
+.layer-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .layer-color {
   width: 14px;
   height: 14px;
   border-radius: 50%;
   background: var(--layer-color);
-  align-self: center;
   flex: none;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
 }
+.layer-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  flex: 1;
+}
+/* Selects ocupam a largura toda dentro do card */
+.layer .control select {
+  width: 100%;
+  min-width: 0;
+}
 .remove-layer {
-  align-self: center;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: transparent;
   border: 1px solid var(--fret-line);
   color: var(--muted);
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1;
   cursor: pointer;
+  flex: none;
   transition: background 0.15s ease, color 0.15s ease;
 }
 .remove-layer:hover {
@@ -144,17 +180,25 @@ main {
   border-color: var(--tonic-bg);
 }
 .add-layer {
-  align-self: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+  width: 100%;
+  margin-top: 0.8rem;
+  padding: 0.6rem;
+  border-radius: 10px;
   background: var(--wood);
   color: var(--accent);
   border: 2px dashed var(--fret-line);
-  font-size: 1.6rem;
-  line-height: 1;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   transition: background 0.15s ease, border-color 0.15s ease;
+}
+.add-layer .add-icon {
+  font-size: 1.3rem;
+  line-height: 1;
 }
 .add-layer:hover:not(:disabled) {
   background: var(--wood-light);
@@ -165,13 +209,38 @@ main {
   cursor: not-allowed;
 }
 
-/* ---------- Info da escala ---------- */
+/* ---------- Controles acima e abaixo do braço ---------- */
+.board-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1.2rem;
+  margin-bottom: 1rem;
+}
+.board-top-controls {
+  display: flex;
+  gap: 1rem;
+  flex: none;
+}
+.bottom-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 1.2rem;
+  padding: 0.8rem;
+  background: var(--panel);
+  border-radius: 10px;
+}
+
+/* ---------- Info da escala (notas), acima do braço ---------- */
 .scale-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin: 1.4rem 0 1rem;
+  gap: 0.8rem;
+  justify-content: flex-start;
+  flex: 1;
+  min-width: 220px;
 }
 .info-scale {
   background: var(--panel);
@@ -387,6 +456,30 @@ footer {
   color: var(--muted);
   font-size: 0.8rem;
   padding: 1.5rem 1rem 2rem;
+}
+
+/* Telas estreitas: a sidebar passa a ficar em cima, na horizontal */
+@media (max-width: 860px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    position: static;
+    max-height: none;
+  }
+  .scale-layers {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .layer {
+    flex: 1 1 200px;
+  }
+  .add-layer {
+    width: auto;
+    margin-top: 0;
+    align-self: center;
+  }
 }
 
 @media (max-width: 600px) {
