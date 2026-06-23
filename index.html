@@ -14,15 +14,9 @@
 
   <main>
     <section class="controls" aria-label="Controles">
-      <div class="control">
-        <label for="key">Tom (tônica)</label>
-        <select id="key"></select>
-      </div>
-
-      <div class="control">
-        <label for="scale">Escala</label>
-        <select id="scale"></select>
-      </div>
+      <!-- Escalas sobrepostas (geradas dinamicamente) -->
+      <div id="scaleLayers" class="scale-layers"></div>
+      <button id="addLayer" class="add-layer" title="Adicionar outra escala (sobreposição)" aria-label="Adicionar escala">+</button>
 
       <div class="control">
         <label for="tuning">Afinação</label>
@@ -58,9 +52,9 @@
     </section>
 
     <section class="legend">
-      <span class="legend-item"><span class="dot tonic"></span> Tônica</span>
-      <span class="legend-item"><span class="dot note"></span> Nota da escala</span>
-      <span class="legend-item">Os números nas casas são as casas de referência (3, 5, 7, 9, 12...)</span>
+      <span class="legend-item"><span class="dot tonic-ring"></span> Tônica (anel dourado)</span>
+      <span class="legend-item"><span class="dot split"></span> Nota comum a 2+ escalas (dividida nas cores)</span>
+      <span class="legend-item">Cada escala tem sua cor — veja os nomes acima do braço.</span>
     </section>
   </main>
 

@@ -45,10 +45,17 @@ const SCALES = {
   'harmonic_major':   { name: 'Maior Harmônica',        intervals: [0, 2, 4, 5, 7, 8, 11],     degrees: ['1', '2', '3', '4', '5', 'b6', '7'] },
 };
 
+// Agrupamento das escalas para os menus.
+const SCALE_GROUPS = {
+  'Principais': ['major', 'natural_minor', 'harmonic_minor', 'melodic_minor', 'altered'],
+  'Modos Gregos': ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'locrian'],
+  'Pentatônicas / Blues': ['pentatonic_major', 'pentatonic_minor', 'blues_minor', 'blues_major'],
+  'Simétricas / Exóticas': ['whole_tone', 'dim_whole_half', 'dim_half_whole', 'phrygian_dominant', 'hungarian_minor', 'harmonic_major'],
+};
+
 // ------------------------------------------------------------
-//  Afinações (notas das cordas, da mais aguda para a mais grave
-//  na ordem de exibição — corda 1 em cima).
-//  Guardamos da grave para a aguda e invertemos na hora de mostrar.
+//  Afinações (notas das cordas, da grave para a aguda;
+//  invertemos na hora de mostrar — corda 1 em cima).
 // ------------------------------------------------------------
 const TUNINGS = {
   'standard':    { name: 'Padrão (E A D G B E)',     notes: ['E', 'A', 'D', 'G', 'B', 'E'] },
@@ -65,12 +72,26 @@ const TUNINGS = {
 const MARKER_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
 const DOUBLE_MARKER_FRETS = [12, 24];
 
+// Paleta de cores das camadas (uma cor por escala sobreposta).
+// A tônica é marcada por um anel dourado, então evitamos dourado aqui.
+const LAYER_COLORS = [
+  '#2e9e86', // verde-azulado
+  '#4a86d8', // azul
+  '#d9863a', // laranja
+  '#a05cd0', // roxo
+  '#d04a78', // rosa
+  '#7fa83a', // verde-oliva
+];
+const MAX_LAYERS = LAYER_COLORS.length;
+
 // ------------------------------------------------------------
 //  Estado da aplicação
 // ------------------------------------------------------------
 const state = {
-  key: 'C',
-  scale: 'major',
+  // Cada camada é uma escala sobreposta, com seu tom e tipo.
+  layers: [
+    { key: 'C', scale: 'major' },
+  ],
   tuning: 'standard',
   frets: 15,
   showDegrees: false,
@@ -91,16 +112,45 @@ function noteName(index, useFlats) {
   return arr[((index % 12) + 12) % 12];
 }
 
-// Retorna um Map: índice cromático -> grau (string), para a escala/tom atuais.
-function getScaleMap() {
-  const scale = SCALES[state.scale];
-  const root = noteIndex(state.key);
+// Retorna um Map: índice cromático -> grau (string), para uma camada.
+function scaleMapFor(layer) {
+  const scale = SCALES[layer.scale];
+  const root = noteIndex(layer.key);
   const map = new Map();
   scale.intervals.forEach((interval, i) => {
-    const idx = (root + interval) % 12;
-    map.set(idx, scale.degrees[i]);
+    map.set((root + interval) % 12, scale.degrees[i]);
   });
   return map;
+}
+
+// Para cada nota cromática (0-11), lista quais camadas a contêm.
+// Retorna array indexado por nota -> [{ li, color, degree, isTonic }]
+function buildHitTable() {
+  const table = Array.from({ length: 12 }, () => []);
+  state.layers.forEach((layer, li) => {
+    const map = scaleMapFor(layer);
+    const root = noteIndex(layer.key);
+    map.forEach((degree, idx) => {
+      table[idx].push({
+        li,
+        color: LAYER_COLORS[li],
+        degree,
+        isTonic: idx === root,
+        layer,
+      });
+    });
+  });
+  return table;
+}
+
+// Gradiente de "pizza" para notas presentes em várias escalas.
+function conicBackground(colors) {
+  const n = colors.length;
+  const step = 360 / n;
+  const stops = colors
+    .map((c, i) => `${c} ${(i * step).toFixed(2)}deg ${((i + 1) * step).toFixed(2)}deg`)
+    .join(', ');
+  return `conic-gradient(from -90deg, ${stops})`;
 }
 
 // ------------------------------------------------------------
@@ -110,9 +160,7 @@ let audioCtx = null;
 function playNote(chromaticIndex, stringFromTop, totalStrings) {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Frequência aproximada: usa A4 = 440 como referência.
-    // Estimamos uma oitava com base na posição da corda só para variar o timbre.
-    const octaveOffset = (totalStrings - stringFromTop); // cordas graves = oitava menor
+    const octaveOffset = (totalStrings - stringFromTop);
     const semitonesFromA4 = chromaticIndex - noteIndex('A') + (octaveOffset - 3) * 12;
     const freq = 440 * Math.pow(2, semitonesFromA4 / 12);
     if (!isFinite(freq) || freq < 20 || freq > 5000) return;
@@ -139,12 +187,11 @@ function renderFretboard() {
   const board = document.getElementById('fretboard');
   board.innerHTML = '';
 
-  const useFlats = FLAT_KEYS.has(state.key);
-  const scaleMap = getScaleMap();
-  const rootIdx = noteIndex(state.key);
+  // Para nomes de nota usamos a convenção (sustenido/bemol) do 1º tom.
+  const useFlats = FLAT_KEYS.has(state.layers[0].key);
+  const hitTable = buildHitTable();
 
   const tuning = TUNINGS[state.tuning];
-  // Cordas exibidas de cima (aguda) para baixo (grave): invertemos a lista grave->aguda.
   const stringsTopToBottom = [...tuning.notes].reverse();
   const totalStrings = stringsTopToBottom.length;
   const numFrets = state.frets;
@@ -177,26 +224,45 @@ function renderFretboard() {
 
     const openIdx = noteIndex(openNote);
 
-    // Casa 0 (corda solta / pestana)
     for (let f = 0; f <= numFrets; f++) {
       const chromatic = (openIdx + f) % 12;
       const cell = document.createElement('div');
       cell.className = f === 0 ? 'fret-cell open-cell' : 'fret-cell';
 
-      // Marcadores de referência no braço (só no meio visual de uma corda central).
+      // Marcadores de referência no braço.
       if (f > 0 && stringPos === Math.floor(totalStrings / 2)) {
         if (DOUBLE_MARKER_FRETS.includes(f)) cell.classList.add('inlay-double');
         else if (MARKER_FRETS.includes(f)) cell.classList.add('inlay');
       }
 
-      if (scaleMap.has(chromatic)) {
+      const hits = hitTable[chromatic];
+      if (hits.length > 0) {
         const noteEl = document.createElement('button');
         noteEl.className = 'note';
-        if (chromatic === rootIdx) noteEl.classList.add('tonic');
-        noteEl.textContent = state.showDegrees
-          ? scaleMap.get(chromatic)
-          : noteName(chromatic, useFlats);
-        noteEl.title = `${noteName(chromatic, useFlats)} — grau ${scaleMap.get(chromatic)} (casa ${f})`;
+
+        const isTonic = hits.some(h => h.isTonic);
+        if (isTonic) noteEl.classList.add('tonic');
+
+        // Cor de fundo: sólida (1 escala) ou "pizza" (notas comuns).
+        if (hits.length === 1) {
+          noteEl.style.background = hits[0].color;
+        } else {
+          noteEl.classList.add('shared');
+          noteEl.style.background = conicBackground(hits.map(h => h.color));
+        }
+
+        // Rótulo: nome da nota; ou grau (só faz sentido com 1 escala).
+        if (state.showDegrees && hits.length === 1) {
+          noteEl.textContent = hits[0].degree;
+        } else {
+          noteEl.textContent = noteName(chromatic, useFlats);
+        }
+
+        // Tooltip detalhando a qual escala/grau a nota pertence.
+        noteEl.title = hits
+          .map(h => `${h.layer.key} ${SCALES[h.layer.scale].name}: grau ${h.degree}${h.isTonic ? ' (tônica)' : ''}`)
+          .join('  •  ');
+
         noteEl.addEventListener('click', () => playNote(chromatic, stringPos, totalStrings));
         cell.appendChild(noteEl);
       }
@@ -209,49 +275,51 @@ function renderFretboard() {
 }
 
 // ------------------------------------------------------------
-//  Info textual da escala
+//  Info textual das escalas (uma por camada)
 // ------------------------------------------------------------
 function renderScaleInfo() {
   const info = document.getElementById('scaleInfo');
-  const useFlats = FLAT_KEYS.has(state.key);
-  const scale = SCALES[state.scale];
-  const root = noteIndex(state.key);
+  info.innerHTML = state.layers.map((layer, li) => {
+    const useFlats = FLAT_KEYS.has(layer.key);
+    const scale = SCALES[layer.scale];
+    const root = noteIndex(layer.key);
 
-  const noteList = scale.intervals.map((interval, i) => {
-    const idx = (root + interval) % 12;
-    const isRoot = i === 0;
-    return `<span class="info-note${isRoot ? ' info-tonic' : ''}">${noteName(idx, useFlats)}<small>${scale.degrees[i]}</small></span>`;
+    const noteList = scale.intervals.map((interval, i) => {
+      const idx = (root + interval) % 12;
+      const isRoot = i === 0;
+      return `<span class="info-note${isRoot ? ' info-tonic' : ''}">${noteName(idx, useFlats)}<small>${scale.degrees[i]}</small></span>`;
+    }).join('');
+
+    return `
+      <div class="info-scale" style="--layer-color: ${LAYER_COLORS[li]}">
+        <h3><span class="info-swatch"></span>${layer.key} ${scale.name}</h3>
+        <div class="info-notes">${noteList}</div>
+      </div>`;
   }).join('');
-
-  info.innerHTML = `
-    <h2>${state.key} ${scale.name}</h2>
-    <div class="info-notes">${noteList}</div>
-  `;
 }
 
 // ------------------------------------------------------------
-//  Inicialização dos selects
+//  Selects reutilizáveis
 // ------------------------------------------------------------
-function populateSelectors() {
-  const keySel = document.getElementById('key');
+function buildKeySelect(selected, onChange) {
+  const sel = document.createElement('select');
+  sel.className = 'layer-key';
   SHARP_NOTES.forEach(n => {
     const opt = document.createElement('option');
     opt.value = n;
-    // Mostra também o nome bemol quando houver.
     const flat = FLAT_NOTES[SHARP_NOTES.indexOf(n)];
     opt.textContent = flat !== n ? `${n} / ${flat}` : n;
-    keySel.appendChild(opt);
+    sel.appendChild(opt);
   });
-  keySel.value = state.key;
+  sel.value = selected;
+  sel.addEventListener('change', e => onChange(e.target.value));
+  return sel;
+}
 
-  const scaleSel = document.getElementById('scale');
-  const groups = {
-    'Principais': ['major', 'natural_minor', 'harmonic_minor', 'melodic_minor', 'altered'],
-    'Modos Gregos': ['ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'locrian'],
-    'Pentatônicas / Blues': ['pentatonic_major', 'pentatonic_minor', 'blues_minor', 'blues_major'],
-    'Simétricas / Exóticas': ['whole_tone', 'dim_whole_half', 'dim_half_whole', 'phrygian_dominant', 'hungarian_minor', 'harmonic_major'],
-  };
-  Object.entries(groups).forEach(([groupName, keys]) => {
+function buildScaleSelect(selected, onChange) {
+  const sel = document.createElement('select');
+  sel.className = 'layer-scale';
+  Object.entries(SCALE_GROUPS).forEach(([groupName, keys]) => {
     const og = document.createElement('optgroup');
     og.label = groupName;
     keys.forEach(k => {
@@ -260,10 +328,75 @@ function populateSelectors() {
       opt.textContent = SCALES[k].name;
       og.appendChild(opt);
     });
-    scaleSel.appendChild(og);
+    sel.appendChild(og);
   });
-  scaleSel.value = state.scale;
+  sel.value = selected;
+  sel.addEventListener('change', e => onChange(e.target.value));
+  return sel;
+}
 
+function makeControl(labelText, selectEl) {
+  const ctrl = document.createElement('div');
+  ctrl.className = 'control';
+  const label = document.createElement('label');
+  label.textContent = labelText;
+  ctrl.appendChild(label);
+  ctrl.appendChild(selectEl);
+  return ctrl;
+}
+
+// ------------------------------------------------------------
+//  Render dos controles de camadas (escalas sobrepostas)
+// ------------------------------------------------------------
+function renderLayers() {
+  const container = document.getElementById('scaleLayers');
+  container.innerHTML = '';
+
+  state.layers.forEach((layer, li) => {
+    const block = document.createElement('div');
+    block.className = 'layer';
+    block.style.setProperty('--layer-color', LAYER_COLORS[li]);
+
+    const swatch = document.createElement('span');
+    swatch.className = 'layer-color';
+    block.appendChild(swatch);
+
+    block.appendChild(makeControl('Tom', buildKeySelect(layer.key, v => {
+      layer.key = v;
+      update();
+    })));
+    block.appendChild(makeControl('Escala', buildScaleSelect(layer.scale, v => {
+      layer.scale = v;
+      update();
+    })));
+
+    if (state.layers.length > 1) {
+      const rm = document.createElement('button');
+      rm.className = 'remove-layer';
+      rm.textContent = '×';
+      rm.title = 'Remover esta escala';
+      rm.addEventListener('click', () => {
+        state.layers.splice(li, 1);
+        renderLayers();
+        update();
+      });
+      block.appendChild(rm);
+    }
+
+    container.appendChild(block);
+  });
+
+  const addBtn = document.getElementById('addLayer');
+  addBtn.disabled = state.layers.length >= MAX_LAYERS;
+  addBtn.title = addBtn.disabled
+    ? `Máximo de ${MAX_LAYERS} escalas`
+    : 'Adicionar outra escala (sobreposição)';
+}
+
+// ------------------------------------------------------------
+//  Selects globais (afinação / casas) + eventos
+// ------------------------------------------------------------
+function populateGlobalSelectors() {
   const tuningSel = document.getElementById('tuning');
   Object.entries(TUNINGS).forEach(([k, t]) => {
     const opt = document.createElement('option');
@@ -274,25 +407,22 @@ function populateSelectors() {
   tuningSel.value = state.tuning;
 }
 
-// ------------------------------------------------------------
-//  Eventos
-// ------------------------------------------------------------
 function bindEvents() {
-  document.getElementById('key').addEventListener('change', e => {
-    state.key = e.target.value;
-    update();
-  });
-  document.getElementById('scale').addEventListener('change', e => {
-    state.scale = e.target.value;
+  document.getElementById('addLayer').addEventListener('click', () => {
+    if (state.layers.length >= MAX_LAYERS) return;
+    // Nova camada sugere uma menor relativa para já mostrar algo útil.
+    const base = state.layers[0];
+    state.layers.push({ key: base.key, scale: 'pentatonic_minor' });
+    renderLayers();
     update();
   });
   document.getElementById('tuning').addEventListener('change', e => {
     state.tuning = e.target.value;
-    update();
+    renderFretboard();
   });
   document.getElementById('frets').addEventListener('change', e => {
     state.frets = parseInt(e.target.value, 10);
-    update();
+    renderFretboard();
   });
   document.getElementById('showDegrees').addEventListener('change', e => {
     state.showDegrees = e.target.checked;
@@ -312,6 +442,7 @@ function update() {
 // ------------------------------------------------------------
 //  Start
 // ------------------------------------------------------------
-populateSelectors();
+populateGlobalSelectors();
+renderLayers();
 bindEvents();
 update();

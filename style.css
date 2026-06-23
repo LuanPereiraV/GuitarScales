@@ -99,21 +99,107 @@ main {
   cursor: pointer;
 }
 
+/* ---------- Camadas de escalas (sobreposição) ---------- */
+.scale-layers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: stretch;
+}
+.layer {
+  display: flex;
+  align-items: end;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--fret-line);
+  border-left: 4px solid var(--layer-color);
+  border-radius: 10px;
+}
+.layer-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--layer-color);
+  align-self: center;
+  flex: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+}
+.remove-layer {
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--fret-line);
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.remove-layer:hover {
+  background: var(--tonic-bg);
+  color: #fff;
+  border-color: var(--tonic-bg);
+}
+.add-layer {
+  align-self: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--wood);
+  color: var(--accent);
+  border: 2px dashed var(--fret-line);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.add-layer:hover:not(:disabled) {
+  background: var(--wood-light);
+  border-color: var(--accent);
+}
+.add-layer:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* ---------- Info da escala ---------- */
 .scale-info {
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
   margin: 1.4rem 0 1rem;
 }
-.scale-info h2 {
+.info-scale {
+  background: var(--panel);
+  border-radius: 12px;
+  border-left: 5px solid var(--layer-color);
+  padding: 0.8rem 1rem;
+  min-width: 200px;
+}
+.info-scale h3 {
   margin: 0 0 0.6rem;
-  font-size: 1.5rem;
-  color: var(--accent);
+  font-size: 1.15rem;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.info-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--layer-color);
+  flex: none;
 }
 .info-notes {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .info-note {
   background: var(--wood);
@@ -130,10 +216,9 @@ main {
   font-weight: 400;
 }
 .info-tonic {
-  background: var(--tonic-bg);
-  color: #fff;
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
-.info-tonic small { color: rgba(255,255,255,0.85); }
+.info-tonic small { color: var(--accent); }
 
 /* ---------- Braço ---------- */
 .fretboard-wrapper {
@@ -244,16 +329,18 @@ main {
   font-family: inherit;
 }
 .note:hover {
-  background: var(--note-bg-hover);
+  filter: brightness(1.18);
   transform: scale(1.12);
+  z-index: 3;
 }
+/* Nota presente em várias escalas: divisória branca entre as fatias */
+.note.shared {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+/* Tônica (de qualquer escala): anel dourado */
 .note.tonic {
-  background: var(--tonic-bg);
-  border-color: rgba(255,255,255,0.5);
-  box-shadow: 0 0 0 2px rgba(224,83,59,0.4), 0 2px 4px rgba(0,0,0,0.4);
-}
-.note.tonic:hover {
-  background: var(--tonic-bg-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent), 0 2px 5px rgba(0,0,0,0.5);
 }
 
 /* Canhoto: inverte horizontalmente */
@@ -287,8 +374,13 @@ main {
   border-radius: 50%;
   display: inline-block;
 }
-.dot.tonic { background: var(--tonic-bg); }
-.dot.note  { background: var(--note-bg); }
+.dot.tonic-ring {
+  background: var(--note-bg);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.dot.split {
+  background: conic-gradient(from -90deg, #2e9e86 0deg 180deg, #4a86d8 180deg 360deg);
+}
 
 footer {
   text-align: center;
