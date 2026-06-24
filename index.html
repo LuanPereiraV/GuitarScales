@@ -69,9 +69,8 @@
         </div>
       </section>
 
-      <section class="fretboard-wrapper">
-        <div class="fretboard" id="fretboard"></div>
-      </section>
+      <!-- Um ou vários braços, conforme a opção "Fretboards separados" -->
+      <section class="boards" id="boards"></section>
 
       <!-- Notas de cada escala, em linhas com a largura do braço -->
       <section class="scale-info" id="scaleInfo" aria-live="polite"></section>
@@ -84,6 +83,10 @@
         <div class="control switch">
           <input type="checkbox" id="leftHanded" />
           <label for="leftHanded">Canhoto</label>
+        </div>
+        <div class="control switch">
+          <input type="checkbox" id="separateBoards" />
+          <label for="separateBoards">Fretboards separados</label>
         </div>
       </section>
 

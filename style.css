@@ -320,7 +320,29 @@ main {
 .info-tonic small { color: var(--accent); }
 
 /* ---------- Braço ---------- */
-.fretboard-wrapper {
+/* Container que empilha um ou vários braços */
+.boards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.board-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.board-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text);
+  border-left: 4px solid var(--layer-color);
+  padding-left: 0.5rem;
+}
+/* Cada braço rola horizontalmente de forma independente */
+.fretboard-scroll {
   overflow-x: auto;
   padding-bottom: 0.5rem;
   border-radius: 12px;

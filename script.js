@@ -96,6 +96,7 @@ const state = {
   frets: 15,
   showDegrees: false,
   leftHanded: false,
+  separateBoards: false, // um braço por escala (true) ou tudo sobreposto (false)
   // "Box" de posição: janela do braço com largura/posição configuráveis.
   region: {
     enabled: false,
@@ -131,16 +132,16 @@ function scaleMapFor(layer) {
 }
 
 // Para cada nota cromática (0-11), lista quais camadas a contêm.
-// Retorna array indexado por nota -> [{ li, color, degree, isTonic }]
-function buildHitTable() {
+// `layerList` é um array de camadas já com sua cor: { key, scale, color }.
+// Retorna array indexado por nota -> [{ color, degree, isTonic, layer }]
+function buildHitTable(layerList) {
   const table = Array.from({ length: 12 }, () => []);
-  state.layers.forEach((layer, li) => {
+  layerList.forEach((layer) => {
     const map = scaleMapFor(layer);
     const root = noteIndex(layer.key);
     map.forEach((degree, idx) => {
       table[idx].push({
-        li,
-        color: LAYER_COLORS[li],
+        color: layer.color,
         degree,
         isTonic: idx === root,
         layer,
@@ -190,13 +191,14 @@ function playNote(chromaticIndex, stringFromTop, totalStrings) {
 // ------------------------------------------------------------
 //  Render do braço
 // ------------------------------------------------------------
-function renderFretboard() {
-  const board = document.getElementById('fretboard');
-  board.innerHTML = '';
+// Constrói e devolve um elemento .fretboard para a lista de camadas dada.
+function buildFretboard(layerList) {
+  const board = document.createElement('div');
+  board.className = 'fretboard';
 
   // Para nomes de nota usamos a convenção (sustenido/bemol) do 1º tom.
-  const useFlats = FLAT_KEYS.has(state.layers[0].key);
-  const hitTable = buildHitTable();
+  const useFlats = FLAT_KEYS.has(layerList[0].key);
+  const hitTable = buildHitTable(layerList);
 
   const tuning = TUNINGS[state.tuning];
   const stringsTopToBottom = [...tuning.notes].reverse();
@@ -297,6 +299,44 @@ function renderFretboard() {
 
     board.appendChild(stringRow);
   });
+
+  return board;
+}
+
+// Renderiza um ou vários braços, conforme a opção "Fretboards separados".
+function renderBoards() {
+  const container = document.getElementById('boards');
+  container.innerHTML = '';
+
+  // Anexa a cor (pelo índice na lista de camadas) a cada escala.
+  const withColors = state.layers.map((l, li) => ({ ...l, color: LAYER_COLORS[li] }));
+
+  if (state.separateBoards) {
+    // Um braço por escala, cada um com seu título.
+    withColors.forEach(layer => {
+      const block = document.createElement('div');
+      block.className = 'board-block';
+
+      const title = document.createElement('div');
+      title.className = 'board-title';
+      title.style.setProperty('--layer-color', layer.color);
+      title.innerHTML = `<span class="info-swatch"></span>${layer.key} ${SCALES[layer.scale].name}`;
+      block.appendChild(title);
+
+      const scroll = document.createElement('div');
+      scroll.className = 'fretboard-scroll';
+      scroll.appendChild(buildFretboard([layer]));
+      block.appendChild(scroll);
+
+      container.appendChild(block);
+    });
+  } else {
+    // Um único braço com todas as escalas sobrepostas.
+    const scroll = document.createElement('div');
+    scroll.className = 'fretboard-scroll';
+    scroll.appendChild(buildFretboard(withColors));
+    container.appendChild(scroll);
+  }
 }
 
 // ------------------------------------------------------------
@@ -477,47 +517,51 @@ function bindEvents() {
   });
   document.getElementById('tuning').addEventListener('change', e => {
     state.tuning = e.target.value;
-    renderFretboard();
+    renderBoards();
   });
   document.getElementById('frets').addEventListener('change', e => {
     state.frets = parseInt(e.target.value, 10);
     updateRegionUI(); // re-limita a posição da região ao novo nº de casas
-    renderFretboard();
+    renderBoards();
   });
   document.getElementById('showDegrees').addEventListener('change', e => {
     state.showDegrees = e.target.checked;
-    renderFretboard();
+    renderBoards();
   });
   document.getElementById('leftHanded').addEventListener('change', e => {
     state.leftHanded = e.target.checked;
-    renderFretboard();
+    renderBoards();
+  });
+  document.getElementById('separateBoards').addEventListener('change', e => {
+    state.separateBoards = e.target.checked;
+    renderBoards();
   });
 
   // ----- Região do braço -----
   document.getElementById('regionEnabled').addEventListener('change', e => {
     state.region.enabled = e.target.checked;
     updateRegionUI();
-    renderFretboard();
+    renderBoards();
   });
   document.getElementById('regionStart').addEventListener('input', e => {
     state.region.start = parseInt(e.target.value, 10);
     updateRegionUI();
-    renderFretboard();
+    renderBoards();
   });
   document.getElementById('regionSpan').addEventListener('change', e => {
     state.region.span = parseInt(e.target.value, 10);
     updateRegionUI();
-    renderFretboard();
+    renderBoards();
   });
   document.getElementById('regionHide').addEventListener('change', e => {
     state.region.hideOutside = e.target.checked;
-    renderFretboard();
+    renderBoards();
   });
 }
 
 function update() {
   renderScaleInfo();
-  renderFretboard();
+  renderBoards();
 }
 
 // ------------------------------------------------------------

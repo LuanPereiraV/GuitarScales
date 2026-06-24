@@ -13,6 +13,7 @@ Não precisa de instalação nem servidor — é só abrir o `index.html` no nav
   - **Pentatônicas / Blues:** Pentatônica Maior, Pentatônica Menor, Blues Menor, Blues Maior.
   - **Simétricas / exóticas:** Tons Inteiros, Diminuta (T-S e S-T), Frígio Dominante, Menor Húngara, Maior Harmônica.
 - **Sobreposição de escalas:** adicione várias escalas (cada uma com seu tom e cor) para estudar troca de escalas no improviso. Notas comuns aparecem com a bolinha dividida nas cores das escalas.
+- **Fretboards separados:** opção para mostrar cada escala em seu próprio braço (ou todas sobrepostas no mesmo, como padrão).
 - **Região do braço (box de posição):** ative uma janela de largura e posição configuráveis para focar em uma região do braço — ideal para misturar escalas sem sair da mesma posição. As notas de fora ficam esmaecidas (ou ocultas).
 - **Afinações:** Padrão, Drop D, meio tom abaixo, um tom abaixo, DADGAD, Open G, Open D e 7 cordas.
 - **Mostrar graus:** alterna entre nome das notas (C, D, E…) e graus (1, b3, 5…).
